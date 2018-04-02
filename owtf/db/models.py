@@ -4,11 +4,11 @@ owtf.db.models
 
 The SQLAlchemy models for every table in the OWTF DB.
 """
-import datetime
+from datetime import datetime
 
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, \
-    Index, Integer, String, Table, Text, UniqueConstraint
-from sqlalchemy.ext.declarative import declarative_base
+    Index, Integer, String, Table, Text, UniqueConstraint, Unicode, bindparam
+from sqlalchemy.ext.declarative import declarative_base, declared_attr
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import relationship
 
@@ -300,3 +300,47 @@ class Mapping(Base):
     owtf_code = Column(String, primary_key=True)
     mappings = Column(String)
     category = Column(String, nullable=True)
+
+
+class User(Base):
+    __tablename__ = 'users'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(Unicode(255), unique=True)
+    api_tokens = relationship("APIToken", backref="user")
+    cookie_id = Column(Unicode(255), default=None, nullable=False, unique=True)
+
+    def new_api_token(self, token=None, generated=True, note=''):
+        """Create a new API token
+        If `token` is given, load that token.
+        """
+        return APIToken.new(token=token, user=self, generated=generated)
+
+    def new_token(self):
+        pass
+
+    @classmethod
+    def find(cls, db, name):
+        """Find a user by name.
+        Returns None if not found.
+        """
+        return db.query(cls).filter(cls.name == name).first()
+
+
+class APIToken(Base):
+    """An API token"""
+    __tablename__ = 'api_tokens'
+
+    @declared_attr
+    def user_id(cls):
+        return Column(Integer, ForeignKey('users.id', ondelete="CASCADE"), nullable=True)
+
+    id = Column(Integer, primary_key=True)
+    hashed = Column(Unicode(255), unique=True)
+
+    # token metadata for bookkeeping
+    created = Column(DateTime, default=datetime.utcnow())
+    last_activity = Column(DateTime)
+
+    def new(self, token, user, generated):
+        raise NotImplementedError

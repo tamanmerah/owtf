@@ -3,7 +3,6 @@ owtf.utils.http
 ~~~~~~~~~~~~~~~
 
 """
-
 import collections
 import inspect
 import types
@@ -96,3 +95,24 @@ def is_handler_subclass(cls, classnames=("ViewHandler", "APIHandler")):
         return any(c.__name__ in classnames for c in inspect.getmro(cls))
     else:
         raise TypeError("Unexpected type `{}` for class `{}`".format(type(cls), cls))
+
+
+def url_path_join(*pieces):
+    """Join components of url into a relative url.
+    Use to prevent double slash when joining subpath. This will leave the
+    initial and final / in place.
+    Copied from `notebook.utils.url_path_join`.
+    """
+    initial = pieces[0].startswith('/')
+    final = pieces[-1].endswith('/')
+    stripped = [s.strip('/') for s in pieces]
+    result = '/'.join(s for s in stripped if s)
+
+    if initial:
+        result = '/' + result
+    if final:
+        result = result + '/'
+    if result == '//':
+        result = '/'
+
+    return result

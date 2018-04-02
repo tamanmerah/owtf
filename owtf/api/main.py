@@ -15,7 +15,7 @@ from tornado.web import Application
 from owtf.api.routes import API_v1_HANDLERS, UI_HANDLERS
 from owtf.api.utils import VersionMatches
 from owtf.lib.owtf_process import OWTFProcess
-from owtf.settings import DEBUG, SERVER_ADDR, TEMPLATES, STATIC_ROOT, SERVER_PORT, SERVER_LOG
+from owtf.settings import DEBUG, SERVER_ADDR, TEMPLATES, STATIC_ROOT, SERVER_PORT, SERVER_LOG, SECRET
 from owtf.utils.app import Application
 
 __all__ = ['start_server']
@@ -25,13 +25,22 @@ class APIServer(OWTFProcess):
 
     def pseudo_run(self):
         api_v1 = Application(handlers=API_v1_HANDLERS, debug=DEBUG, autoreload=False, gzip=True)
+
+        # Prepare the security context
+        context = {
+            "cookie_secret": SECRET,
+            "xsrf_cookies": True,
+        }
         web = Application(
             handlers=UI_HANDLERS,
             autoreload=False,
             debug=DEBUG,
             template_path=TEMPLATES,
             static_path=STATIC_ROOT,
-            compiled_template_cache=True)
+            compiled_template_cache=True,
+            **context)
+
+        # Routing
         # yapf: disable
         router = RuleRouter([
             Rule(PathMatches("/api/.*"), RuleRouter([

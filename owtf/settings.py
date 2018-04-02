@@ -22,6 +22,9 @@ DEBUG = True
 # Used by tools like dirbuster to launch gui or cli versions
 INTERACTIVE = True
 
+# Application secret - please change this.
+SECRET = "changeme"
+
 # Database Server
 if os.environ.get("DOCKER", None):
     DATABASE_NAME = os.environ["POSTGRES_DB"]
@@ -55,6 +58,8 @@ FILE_SERVER_PORT = 8010
 
 # Default API version
 DEFAULT_API_VERSION = 'v1'
+# Constant, not configurable
+SESSION_COOKIE_NAME = 'owtf-session-id'
 
 # ERROR reporting
 USE_SENTRY = False

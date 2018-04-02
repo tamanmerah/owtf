@@ -4,12 +4,18 @@ owtf.api.handlers.base
 
 """
 import json
+import uuid
+try:
+    from http.client import responses
+except ImportError:
+    from httplib import responses
 
 from tornado.escape import url_escape
 from tornado.web import RequestHandler
 
-from owtf.lib.exceptions import APIError
-from owtf.settings import SERVER_PORT, FILE_SERVER_PORT
+from owtf.api.handlers.auth import auth_header_pat
+from owtf.settings import SERVER_PORT, FILE_SERVER_PORT, SERVER_ADDR, SESSION_COOKIE_NAME
+from owtf.utils.http import url_path_join
 
 __all__ = ['APIRequestHandler', 'FileRedirectHandler', 'UIRequestHandler']
 
@@ -75,35 +81,59 @@ class APIRequestHandler(RequestHandler):
         self.finish()
 
     def write_error(self, status_code, **kwargs):
-        """Override of RequestHandler.write_error
-        Calls ``error()`` or ``fail()`` from JSendMixin depending on which
-        exception was raised with provided reason and status code.
-        :type  status_code: int
-        :param status_code: HTTP status code
+        """Write JSON errors instead of HTML"""
+        exc_info = kwargs.get('exc_info')
+        message = ''
+        status_message = responses.get(status_code, 'Unknown Error')
+        if exc_info:
+            exception = exc_info[1]
+            # get the custom message, if defined
+            try:
+                message = exception.log_message % exception.args
+            except Exception:
+                pass
+
+            # construct the custom reason, if defined
+            reason = getattr(exception, 'reason', '')
+            if reason:
+                status_message = reason
+        self.write(json.dumps({
+            'status': status_code,
+            'message': message or status_message,
+        }))
+
+    def get_auth_token(self):
+        """Get the authorization token from Authorization header"""
+        auth_header = self.request.headers.get('Authorization', '')
+        match = auth_header_pat.match(auth_header)
+        if not match:
+            return None
+        return match.group(1)
+
+    def check_referer(self):
+        """Check Origin for cross-site API requests.
+        Copied from WebSocket with changes:
+        - allow unspecified host/referer (e.g. scripts)
         """
+        host = self.request.headers.get("Host")
+        referer = self.request.headers.get("Referer")
 
-        def get_exc_message(exception):
-            return exception.log_message if \
-                hasattr(exception, "log_message") else str(exception)
+        # If no header is provided, assume it comes from a script/curl.
+        # We are only concerned with cross-site browser stuff here.
+        if not host:
+            self.application.log.warning("Blocking API request with no host")
+            return False
+        if not referer:
+            self.application.log.warning("Blocking API request with no referer")
+            return False
 
-        self.clear()
-        self.set_status(status_code)
-
-        # Any APIError exceptions raised will result in a JSend fail written
-        # back with the log_message as data. Hence, log_message should NEVER
-        # expose internals. Since log_message is proprietary to HTTPError
-        # class exceptions, all exceptions without it will return their
-        # __str__ representation.
-        # All other exceptions result in a JSend error being written back,
-        # with log_message only written if debug mode is enabled
-        exception = kwargs["exc_info"][1]
-        if any(isinstance(exception, c) for c in [APIError]):
-            self.fail(get_exc_message(exception))
-        else:
-            self.error(
-                message=self._reason,
-                data=get_exc_message(exception) if self.settings.get("debug") else None,
-                code=status_code)
+        host_path = url_path_join(host, SERVER_ADDR)
+        referer_path = referer.split('://', 1)[-1]
+        if not (referer_path + '/').startswith(host_path):
+            self.application.log.warning("Blocking Cross Origin API request.  Referer: %s, Host: %s", referer,
+                                         host_path)
+            return False
+        return True
 
 
 class UIRequestHandler(RequestHandler):
@@ -112,6 +142,60 @@ class UIRequestHandler(RequestHandler):
         url = super(UIRequestHandler, self).reverse_url(name, *args)
         url = url.replace('?', '')
         return url.split('None')[0]
+
+    def _set_cookie(self, key, value, encrypted=True, **overrides):
+        """Setting any cookie should go through here
+        if encrypted use tornado's set_secure_cookie,
+        otherwise set plaintext cookies.
+        """
+        # tornado <4.2 have a bug that consider secure==True as soon as
+        # 'secure' kwarg is passed to set_secure_cookie
+        kwargs = {
+            'httponly': True,
+        }
+        if self.request.protocol == 'https':
+            kwargs['secure'] = True
+        kwargs['domain'] = SERVER_ADDR
+        kwargs.update(self.settings.get('cookie_options', {}))
+        kwargs.update(overrides)
+
+        if encrypted:
+            set_cookie = self.set_secure_cookie
+        else:
+            set_cookie = self.set_cookie
+
+        self.application.log.debug("Setting cookie %s: %s", key, kwargs)
+        set_cookie(key, value, **kwargs)
+
+    def _set_user_cookie(self, user, server):
+        self.application.log.debug("Setting cookie for %s: %s", user.name, server.cookie_name)
+        self._set_cookie(
+            server.cookie_name,
+            user.cookie_id,
+            encrypted=True,
+            path=server.base_url,
+        )
+
+    def get_session_cookie(self):
+        """Get the session id from a cookie
+        Returns None if no session id is stored
+        """
+        return self.get_cookie(SESSION_COOKIE_NAME, None)
+
+    def set_session_cookie(self):
+        """Set a new session id cookie
+        new session id is returned
+        Session id cookie is *not* encrypted,
+        so other services on this domain can read it.
+        """
+        session_id = uuid.uuid4().hex
+        self._set_cookie(SESSION_COOKIE_NAME, session_id, encrypted=False)
+        return session_id
+
+    @property
+    def template_context(self):
+        user = self.get_current_user()
+        return dict(user=user)
 
 
 class FileRedirectHandler(RequestHandler):
