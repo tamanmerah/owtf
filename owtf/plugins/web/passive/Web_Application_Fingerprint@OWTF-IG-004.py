@@ -2,7 +2,7 @@
 PASSIVE Plugin for Testing for Web Application Fingerprint (OWASP-IG-004)
 """
 from owtf.managers.resource import get_resources
-from owtf.plugin.plugin_helper import plugin_helper
+from owtf.plugin.plugin_api import plugin_api
 
 DESCRIPTION = "Third party resources and fingerprinting suggestions"
 
@@ -12,8 +12,8 @@ def run(PluginInfo):
                ['Joomla', 'CMS_FingerPrint_Joomla'], ['Drupal',
                                                       'CMS_FingerPrint_Drupal'], ['Mambo', 'CMS_FingerPrint_Mambo']]
     # Vuln search box to be built in core and reused in different plugins:
-    Content = plugin_helper.VulnerabilitySearchBox('')
+    Content = plugin_api.VulnerabilitySearchBox('')
     resource = get_resources('PassiveFingerPrint')
-    Content += plugin_helper.resource_linklist('Online Resources', resource)
-    Content += plugin_helper.SuggestedCommandBox(PluginInfo, mapping, 'CMS Fingerprint - Potentially useful commands')
+    Content += plugin_api.resource_linklist('Online Resources', resource)
+    Content += plugin_api.SuggestedCommandBox(PluginInfo, mapping, 'CMS Fingerprint - Potentially useful commands')
     return Content

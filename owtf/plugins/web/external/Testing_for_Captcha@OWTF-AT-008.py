@@ -2,13 +2,13 @@
 EXTERNAL Plugin for CAPTCHA assistance
 """
 from owtf.managers.resource import get_resources
-from owtf.plugin.plugin_helper import plugin_helper
+from owtf.plugin.plugin_api import plugin_api
 
 DESCRIPTION = "Plugin to assist manual testing"
 
 
 def run(PluginInfo):
-    Content = plugin_helper.VulnerabilitySearchBox('')
+    Content = plugin_api.VulnerabilitySearchBox('')
     resource = get_resources('ExternalCAPTCHA')
-    Content += plugin_helper.resource_linklist('Tools', resource)
+    Content += plugin_api.resource_linklist('Tools', resource)
     return Content

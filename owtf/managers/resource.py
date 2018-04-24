@@ -38,8 +38,8 @@ def get_rsrc_replacement_dict(session):
 
     configuration = get_replacement_dict(session)
     configuration.update(target_manager.get_target_config())
-    configuration.update(config_handler.get_replacement_dict())
-    configuration.update(config_handler.get_framework_config_dict())  # for aux plugins
+    configuration.update(config_handler.get_replacement_dict)
+    configuration.update(config_handler.get_framework_config_dict)  # for aux plugins
     return configuration
 
 

@@ -697,7 +697,7 @@
        1) OWTF sends a targeted phishing attack via aux/se/Targeted_Phishing@OWTF-ASEP-002.py
        2) An OWTF imapd Agent processes any new email that arrives and emulates a user click for all links found in the message
  + Added initial SMB handler to the framework and a related plugin: aux/smb/SMB_Handler@OWTF-SMB-001.py <=> Abraham Aranguren (@7a_)
- + Added an Interactive Shell handler useful to interact with remote and local shells run in a subprocess <=> Abraham Aranguren (@7a_)
+ + Added an Interactive BaseShell handler useful to interact with remote and local shells run in a subprocess <=> Abraham Aranguren (@7a_)
  + Significant SET integration improvements: new OWTF SET handler + spear_phishing modules and plugin/configurability tweaks  <=> Abraham Aranguren (@7a_)
  + Added hopefully better comments in several places <=> Abraham Aranguren (@7a_)
  + Started to use Eclipse and Fixed indentation on many framework files :P <=> Abraham Aranguren (@7a_)

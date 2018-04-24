@@ -4,7 +4,7 @@ file and display it for review
 """
 from owtf.http.requester import requester
 from owtf.managers.target import get_targets_as_list
-from owtf.plugin.plugin_helper import plugin_helper
+from owtf.plugin.plugin_api import plugin_api
 
 DESCRIPTION = "Normal requests for XSF analysis"
 
@@ -22,4 +22,4 @@ def run(PluginInfo):
     # because our proxy stores the transactions and not the requester. So the
     # best way is to use the url list to retrieve transactions while making the
     # report
-    return plugin_helper.TransactionTableForURLList(True, url_list, "GET")
+    return plugin_api.TransactionTableForURLList(True, url_list, "GET")

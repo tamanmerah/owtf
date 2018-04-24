@@ -21,7 +21,7 @@ from owtf.lib.exceptions import InvalidWorkerReference
 from owtf.lib.owtf_process import OWTFProcess
 from owtf.managers.error import add_error
 from owtf.managers.worklist import get_work_for_target
-from owtf.plugin.plugin_handler import plugin_handler
+from owtf.plugin.runner import plugin_runner
 from owtf.settings import MIN_RAM_NEEDED, PROCESS_PER_CORE
 from owtf.utils.error import abort_framework
 from owtf.utils.process import check_pid, _signal_process
@@ -34,11 +34,6 @@ TIMEOUT = 3
 
 
 class Worker(OWTFProcess):
-
-    def initialize(self, **kwargs):
-        super(Worker, self).__init__(**kwargs)
-        self.output_q = None
-        self.input_q = None
 
     def pseudo_run(self):
         """ When run for the first time, put something into output queue ;)
@@ -55,9 +50,9 @@ class Worker(OWTFProcess):
                     print("No work")
                     sys.exit(0)
                 target, plugin = work
-                plugin_dir = plugin_handler.get_plugin_group_dir(plugin['group'])
-                plugin_handler.switch_to_target(target["id"])
-                plugin_handler.process_plugin(session=self.session, plugin_dir=plugin_dir, plugin=plugin)
+                plugin_dir = plugin_runner.get_plugin_group_dir(plugin['group'])
+                plugin_runner.switch_to_target(target["id"])
+                plugin_runner.process_plugin(session=self.session, plugin_dir=plugin_dir, plugin=plugin)
                 self.output_q.put('done')
             except queue.Empty:
                 pass

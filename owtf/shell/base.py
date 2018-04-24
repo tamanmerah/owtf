@@ -1,6 +1,6 @@
 """
-owtf.shell.blocking_shell
-~~~~~~~~~~~~~~~~~~~~~~~~~
+owtf.shell.base
+~~~~~~~~~~~~~~~
 
 The shell module allows running arbitrary shell commands and is critical to the framework
 in order to run third party tools
@@ -20,10 +20,10 @@ from owtf.utils.error import user_abort
 from owtf.utils.strings import multi_replace_dict, scrub_output
 from owtf.utils.timer import timer
 
-__all__ = ['shell']
+__all__ = ['shell', 'BaseShell']
 
 
-class Shell(object):
+class BaseShell(object):
 
     def __init__(self):
         # Some settings like the plugin output dir are dynamic, config is no place for those
@@ -227,4 +227,4 @@ class Shell(object):
         return p.communicate()[0]
 
 
-shell = Shell()
+shell = BaseShell()

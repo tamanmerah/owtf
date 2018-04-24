@@ -6,7 +6,7 @@ import logging
 
 from owtf.http.requester import requester
 from owtf.managers.target import target_manager
-from owtf.plugin.plugin_helper import plugin_helper
+from owtf.plugin.plugin_api import plugin_api
 
 DESCRIPTION = "Normal request for robots.txt analysis"
 
@@ -18,8 +18,8 @@ def run(PluginInfo):
     # Use transaction cache if possible for speed
     http_transaction = requester.get_transaction(True, url, "GET")
     if http_transaction is not None and http_transaction.found:
-        test_result += plugin_helper.ProcessRobots(PluginInfo, http_transaction.get_raw_response_body(), top_url, '')
+        test_result += plugin_api.ProcessRobots(PluginInfo, http_transaction.get_raw_response_body(), top_url, '')
     else:  # robots.txt NOT found
         logging.info("robots.txt was NOT found")
-        test_result += plugin_helper.TransactionTableForURLList(True, [url])
+        test_result += plugin_api.TransactionTableForURLList(True, [url])
     return test_result

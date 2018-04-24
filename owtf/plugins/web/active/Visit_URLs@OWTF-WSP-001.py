@@ -8,7 +8,7 @@ import logging
 
 from owtf.http.requester import requester
 from owtf.managers.url import get_urls_to_visit
-from owtf.plugin.plugin_helper import plugin_helper
+from owtf.plugin.plugin_api import plugin_api
 
 DESCRIPTION = "Visit URLs found by other tools, some could be sensitive: need permission"
 
@@ -19,4 +19,4 @@ def run(PluginInfo):
         requester.get_transaction(True, url)  # Use cache if possible
     Content = "{} URLs were visited".format(str(len(urls)))
     logging.info(Content)
-    return plugin_helper.HtmlString(Content)
+    return plugin_api.HtmlString(Content)

@@ -45,21 +45,6 @@ def plugin_count_output(session):
     return results
 
 
-def get_html_output(plugin_output):
-    """Get html output
-
-    :param plugin_output: Plugin output
-    :type plugin_output: `list`
-    :return: HTML string
-    :rtype: `str`
-    """
-    from owtf.api.reporter import reporter
-    content = ''
-    for item in plugin_output:
-        content += getattr(reporter, item["type"])(**item["output"])
-    return content
-
-
 @target_required
 def get_plugin_output_dict(obj, target_id=None, inc_output=False):
     """Gets plugin outputs as dict
@@ -82,7 +67,7 @@ def get_plugin_output_dict(obj, target_id=None, inc_output=False):
         # If output is present, json decode it
         if inc_output:
             if pdict.get("output", None):
-                pdict["output"] = get_html_output(json.loads(pdict["output"]))
+                pdict["output"] = json.loads(pdict["output"])
         else:
             pdict.pop("output")
         pdict["start_time"] = obj.start_time.strftime(DATE_TIME_FORMAT)
@@ -323,7 +308,7 @@ def save_plugin_output(session, plugin, output, target_id=None):
     :return: None
     :rtype: None
     """
-    from owtf.plugin.plugin_handler import plugin_handler
+    from owtf.plugin.runner import plugin_runner
 
     session.merge(
         PluginOutput(
@@ -338,7 +323,7 @@ def save_plugin_output(session, plugin, output, target_id=None):
             target_id=target_id,
             # Save path only if path exists i.e if some files were to be stored it will be there
             output_path=(plugin["output_path"]
-                         if os.path.exists(plugin_handler.get_plugin_output_dir(plugin)) else None),
+                         if os.path.exists(plugin_runner.get_plugin_output_dir(plugin)) else None),
             owtf_rank=plugin['owtf_rank']))
     session.commit()
 
@@ -358,7 +343,7 @@ def save_partial_output(session, plugin, output, message, target_id=None):
     :return: None
     :rtype: None
     """
-    from owtf.plugin.plugin_handler import plugin_handler
+    from owtf.plugin.runner import plugin_runner
 
     session.merge(
         PluginOutput(
@@ -374,7 +359,7 @@ def save_partial_output(session, plugin, output, message, target_id=None):
             target_id=target_id,
             # Save path only if path exists i.e if some files were to be stored it will be there
             output_path=(plugin["output_path"]
-                         if os.path.exists(plugin_handler.get_plugin_output_dir(plugin)) else None),
+                         if os.path.exists(plugin_runner.get_plugin_output_dir(plugin)) else None),
             owtf_rank=plugin['owtf_rank']))
     session.commit()
 

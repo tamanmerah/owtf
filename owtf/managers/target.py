@@ -18,7 +18,7 @@ from owtf.db.session import get_count, get_scoped_session
 from owtf.lib.exceptions import DBIntegrityException, InvalidParameterType, \
     InvalidTargetReference, UnresolvableTargetException
 from owtf.managers.session import add_target_to_session, session_required
-from owtf.plugin.plugin_params import plugin_params
+from owtf.plugin.params import plugin_params
 from owtf.settings import OUTPUT_PATH
 from owtf.utils.file import cleanup_target_dirs, create_output_dir_target, get_target_dir
 from owtf.utils.ip import get_ip_from_hostname, get_ips_from_hostname
@@ -298,7 +298,7 @@ def get_target_url_for_id(session, id):
     """
     target_obj = session.query(Target).get(id)
     if not target_obj:
-        logging.info("Failing with ID: %s" % str(id))
+        logging.info("Failing with ID: %s", str(id))
         raise InvalidTargetReference("1. Target doesn't exist with ID: {!s}".format(id))
     return target_obj.target_url
 

@@ -1,6 +1,6 @@
 from owtf.config import config_handler
-from owtf.plugin.plugin_helper import plugin_helper
-from owtf.plugin.plugin_params import plugin_params
+from owtf.plugin.plugin_api import plugin_api
+from owtf.plugin.params import plugin_params
 
 DESCRIPTION = "Password Bruteforce Testing plugin"
 BRUTEFORCER = ['hydra']
@@ -35,5 +35,5 @@ def run(PluginInfo):
     for args in plugin_params.get_args(args, PluginInfo):
         plugin_params.set_config(args)
         resource = config_handler.get_resources('PassBruteForce_' + args['BRUTEFORCER'] + "_" + args['CATEGORY'])
-        Content += plugin_helper.CommandDump('Test Command', 'Output', resource, PluginInfo, "")  # No previous output
+        Content += plugin_api.CommandDump('Test Command', 'Output', resource, PluginInfo, "")  # No previous output
     return Content

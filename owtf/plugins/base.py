@@ -1,5 +1,7 @@
 from abc import ABCMeta, abstractmethod
 
+from owtf.plugin.plugin_api import PluginAPI
+
 
 class Plugin(object):
     """Abstract base class definition for plugins.
@@ -10,10 +12,13 @@ class Plugin(object):
 
     name = None
     description = None
-    author = None
+    code = None
     # Type is a tuple of tags.
     # For example, ('web', 'grep')
     type = None
+
+    def __init__(self):
+        self.plugin_api = PluginAPI()
 
     @abstractmethod
     def run(self):

@@ -28,7 +28,7 @@ from owtf.managers.resource import load_resources_from_file
 from owtf.managers.session import _ensure_default_session
 from owtf.managers.target import load_targets
 from owtf.managers.worklist import load_works
-from owtf.plugin.plugin_handler import show_plugin_list
+from owtf.plugin.runner import show_plugin_list
 from owtf.proxy.main import start_proxy
 from owtf.settings import AUX_TEST_GROUPS, DEFAULT_FRAMEWORK_CONFIG, DEFAULT_GENERAL_PROFILE, \
     DEFAULT_MAPPING_PROFILE, DEFAULT_RESOURCES_PROFILE, FALLBACK_AUX_TEST_GROUPS, FALLBACK_FRAMEWORK_CONFIG, \
@@ -38,7 +38,7 @@ from owtf.utils.file import clean_temp_storage_dirs, create_temp_storage_dirs
 from owtf.utils.process import _signal_process
 from owtf.utils.signals import workers_finish, owtf_start
 
-__all__ = ['get_plugins_from_arg', 'process_options', 'initialise_framework', 'finish', 'main']
+__all__ = ['finish', 'main']
 
 # Store parent PID for clean exit
 owtf_pid = None
@@ -119,8 +119,8 @@ def process_options(user_args):
         if arg.tor_mode:
             arg.tor_mode = arg.tor_mode.split(":")
             if arg.tor_mode[0] == "help":
-                from owtf.proxy.tor_manager import TOR_manager
-                TOR_manager.msg_configure_tor()
+                from owtf.proxy.tor_manager import configager
+                configager.msg_configure_tor()
                 exit(0)
             if len(arg.tor_mode) == 1:
                 if arg.tor_mode[0] != "help":

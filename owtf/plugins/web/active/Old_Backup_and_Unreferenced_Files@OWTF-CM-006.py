@@ -3,7 +3,7 @@ ACTIVE Plugin for Old, Backup and Unreferenced Files (OWASP-CM-006)
 https://www.owasp.org/index.php/Testing_for_Old,_Backup_and_Unreferenced_Files_(OWASP-CM-006)
 """
 from owtf.managers.resource import get_resources
-from owtf.plugin.plugin_helper import plugin_helper
+from owtf.plugin.plugin_api import plugin_api
 from owtf.settings import INTERACTIVE
 
 DESCRIPTION = "Active probing for juicy files (DirBuster)"
@@ -17,7 +17,7 @@ def run(PluginInfo):
 
     # Get settings from the config DB
     resource = get_resources(DirBusterInteraction['{}'.format(INTERACTIVE)])
-    Content = plugin_helper.CommandDump('Test Command', 'Output', resource, PluginInfo, [])
+    Content = plugin_api.CommandDump('Test Command', 'Output', resource, PluginInfo, [])
     extractURL_resource = get_resources('DirBuster_Extract_URLs')
-    Content += plugin_helper.CommandDump('Test Command', 'Output', extractURL_resource, PluginInfo, [])
+    Content += plugin_api.CommandDump('Test Command', 'Output', extractURL_resource, PluginInfo, [])
     return Content
